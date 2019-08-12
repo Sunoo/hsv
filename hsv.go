@@ -1,42 +1,39 @@
-// Copyright Brian Starkey <stark3y@gmail.com> 2017
-
 // image/color.Color implementation for HSV representation
 package hsv
 
 // HSVColor defines a color in the Hue-Saturation-Value scheme.
-// Hue is a value [0 - 360) specifying the color
-// Saturation is a value [0 - 255] specifying the strength of the color
-// Value is a value [0 - 255] specifying the brightness of the color
+// Hue is a value [0 - 360] specifying the color
+// Saturation is a value [0 - 100] specifying the strength of the color
+// Value is a value [0 - 100] specifying the brightness of the color (currently does nothing)
 type HSVColor struct {
-	H uint16
-	S, V uint8
+	H, S float64
+	V int
 }
 
 func (h HSVColor) RGBA() (r, g, b, a uint32) {
 	// Direct implementation of the graph in this image:
 	// https://en.wikipedia.org/wiki/HSL_and_HSV#/media/File:HSV-RGB-comparison.svg
-	max := uint32(h.V) * 255
-	min := uint32(h.V) * uint32(255 - h.S)
+	var max uint32 = 255
+	var min uint32 = uint32(255 - (h.S / 100 * 255))
 
-	h.H %= 360
-	segment := h.H / 60
-	offset := uint32(h.H % 60)
-	mid := ((max - min) * offset) / 60
+	var segment uint32 = uint32(h.H / 60)
+	var offset uint32 = uint32(h.H) % 60
+	var mid uint32 = ((max - min) * offset) / 60
 
 	switch segment {
 		case 0:
-			return max, min + mid, min, 0xffff
+			return max, min + mid, min, 255
 		case 1:
-			return max - mid, max, min, 0xffff
+			return max - mid, max, min, 255
 		case 2:
-			return min, max, min + mid, 0xffff
+			return min, max, min + mid, 255
 		case 3:
-			return min, max - mid, max, 0xffff
+			return min, max - mid, max, 255
 		case 4:
-			return min + mid, min, max, 0xffff
+			return min + mid, min, max, 255
 		case 5:
-			return max, min, max - mid, 0xffff
+			return max, min, max - mid, 255
 	}
 
-	return 0, 0, 0, 0xffff
+	return 0, 0, 0, 255
 }
